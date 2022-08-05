@@ -19,11 +19,11 @@ class HBNBCommand(Cmd):
         """Quit command to exit the program"""
         quit()
         return True
-    
+
     def do_EOF(self, line):
         """Quit command to exit the program"""
         return True
-    
+
     def emptyline(self):
         """Empty line overwrite"""
         return False
