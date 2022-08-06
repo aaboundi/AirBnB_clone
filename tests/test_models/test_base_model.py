@@ -135,7 +135,7 @@ class TestBaseModel(unittest.TestCase):
         """Tests instantiation with **kwargs."""
 
         my_model = BaseModel()
-        my_model.name = "Holberton"
+        my_model.name = "ALX"
         my_model.my_number = 89
         my_model_json = my_model.to_dict()
         my_new_model = BaseModel(**my_model_json)
