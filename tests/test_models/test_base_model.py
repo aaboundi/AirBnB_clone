@@ -58,6 +58,7 @@ class TestBaseModel(unittest.TestCase):
 
     def test_3_attributes(self):
         """Tests attributes value for instance of a BaseModel class."""
+
         attributes = storage.attributes()["BaseModel"]
         o = BaseModel()
         for k, v in attributes.items():
@@ -75,11 +76,13 @@ class TestBaseModel(unittest.TestCase):
 
     def test_3_id(self):
         """Tests for unique user ids."""
-        le = [BaseModel().id for i in range(1000)]
-        self.assertEqual(len(set(le)), len(le))
+
+        l = [BaseModel().id for i in range(1000)]
+        self.assertEqual(len(set(l)), len(l))
 
     def test_3_save(self):
         """Tests the public instance method save()."""
+
         b = BaseModel()
         time.sleep(0.5)
         date_now = datetime.now()
@@ -105,8 +108,9 @@ class TestBaseModel(unittest.TestCase):
 
     def test_3_to_dict(self):
         """Tests the public instance method to_dict()."""
+
         b = BaseModel()
-        b.name = "Aminata"
+        b.name = "Adja"
         b.age = 28
         d = b.to_dict()
         self.assertEqual(d["id"], b.id)
@@ -131,12 +135,12 @@ class TestBaseModel(unittest.TestCase):
             BaseModel.to_dict(self, 98)
         msg = "to_dict() takes 1 positional argument but 2 were given"
         self.assertEqual(str(e.exception), msg)
-        
+
     def test_4_instantiation(self):
         """Tests instantiation with **kwargs."""
 
         my_model = BaseModel()
-        my_model.name = "ALX"
+        my_model.name = "My_First_Model"
         my_model.my_number = 89
         my_model_json = my_model.to_dict()
         my_new_model = BaseModel(**my_model_json)
