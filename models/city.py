@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-"""Module for User class."""
+# city.py
+"""Module for City class."""
+
 from models.base_model import BaseModel
 
 
-class User(BaseModel):
-    """Class representing a User."""
-    email = ""
-    password = ""
-    first_name = ""
-    last_name = ""
+class City(BaseModel):
+    """Class representing a City."""
+    state_id = ""
+    name = ""
