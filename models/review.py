@@ -1,11 +1,12 @@
 #!/usr/bin/python3
-"""Module for User class."""
+# review.py
+"""Module for Review class."""
+
 from models.base_model import BaseModel
 
 
-class User(BaseModel):
-    """Class representing a User."""
-    email = ""
-    password = ""
-    first_name = ""
-    last_name = ""
+class Review(BaseModel):
+    """Class representing a Review."""
+    place_id = ""
+    user_id = ""
+    text = ""
