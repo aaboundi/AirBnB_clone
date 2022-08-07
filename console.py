@@ -15,7 +15,14 @@ import inspect
 class HBNBCommand(Cmd):
     """HBNBCommand console class definition"""
 
-    models = {"BaseModel": BaseModel, "User": User}
+    models = {
+        "BaseModel": BaseModel,
+        "User": User,
+        "City": City,
+        "Place": Place,
+        "Review": Review,
+        "State": State,
+        }
 
     def __init__(self):
         super().__init__()
