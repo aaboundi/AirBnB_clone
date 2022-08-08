@@ -146,6 +146,11 @@ class HBNBCommand(cmd.Cmd):
         else:
             print("** class doesn't exist **")
 
+    def do_User(self, arg):
+        """command for user management"""
+        if arg == ".all()":
+            self.do_all("User")
+
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
