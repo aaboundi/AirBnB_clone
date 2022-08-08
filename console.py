@@ -17,7 +17,6 @@ from models.place import Place
 from models.state import State
 
 
-
 class HBNBCommand(Cmd):
     """HBNBCommand console class definition"""
 
@@ -29,6 +28,9 @@ class HBNBCommand(Cmd):
         "Review": Review,
         "State": State,
         }
+
+    classes = {"BaseModel", "State", "City",
+               "Amenity", "Place", "Review", "User"}
 
     def __init__(self):
         super().__init__()
@@ -47,152 +49,161 @@ class HBNBCommand(Cmd):
         """Empty line overwrite"""
         return False
 
-    def do_create(self, arg):
-        """command to create instance of BaseModel"""
-        list_arguments_ofclass = arg.split()
-
-        if HBNBCommand.validate_commandline(list_arguments_ofclass):
-            instance = eval(arg)()
+    def do_create(self, line):
+        """Create instance specified by user"""
+        if len(line) == 0:
+            print("** class name missing **")
+        elif line not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+        else:
+            instance = eval(line)()
             instance.save()
             print(instance.id)
 
-    def do_update(self, arg):
-        """updates an object"""
-        args = arg.split()
-        list_arguments_ofcmd = arg.split()
-        if HBNBCommand.validate_commandline(list_arguments_ofcmd):
-            instance = storage.all()
-            for key, value in instance.items():
-                instance_id = key.split('.')[1]
-                if instance_id == list_arguments_ofcmd[1]:
-                    value = self.type_checker(list_arguments_ofcmd[3])
-                    setattr(instance.get(key), list_arguments_ofcmd[2], value)
-                    storage.save()
+    def do_show(self, line):
+        """Print string representation: name and id"""
+        if len(line) == 0:
+            print("** class name missing **")
+            return
+        args = parse(line)
+        if args[0] not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
+        try:
+            if args[1]:
+                name = "{}.{}".format(args[0], args[1])
+                if name not in storage.all().keys():
+                    print("** no instance found **")
+                else:
+                    print(storage.all()[name])
+        except IndexError:
+            print("** instance id missing **")
 
-    def do_all(self, arg):
-        """print string representation of all instances"""
-        list_args_ofcmd = arg.split()
-        # print(arg, list_args_ofcmd)
-        # print("do_all", list(HBNBCommand.models))
+    def do_destroy(self, line):
+        """Destroy instance specified by user; Save changes to JSON file"""
+        if len(line) == 0:
+            print("** class name missing **")
+            return
+        args = parse(line)
+        if args[0] not in HBNBCommand.classes:
+            print("** class doesn't exist **")
+            return
+        try:
+            if args[1]:
+                name = "{}.{}".format(args[0], args[1])
+                if name not in storage.all().keys():
+                    print("** no instance found **")
+                else:
+                    del storage.all()[name]
+                    storage.save()
+        except IndexError:
+            print("** instance id missing **")
+
+    def do_all(self, line):
+        """Print all objects or all objects of specified class"""
+        args = parse(line)
 
         instance_list = []
         instance = storage.all()
 
-        if len(list_args_ofcmd) < 1:
+        if len(args) < 1:
             for value, count in instance.items():
                 instance_list.append(str(instance[value]))
             print("{}".format(instance_list))
         else:
-            if list_args_ofcmd[0] not in self.models.keys():
+            if args[0] not in self.models.keys():
                 print("** class doesn't exist **")
                 return
             for value, count in instance.items():
-                if instance[value].__class__.__name__ == list_args_ofcmd[0]:
+                if instance[value].__class__.__name__ == args[0]:
                     instance_list.append(str(instance[value]))
             print("{}".format(instance_list))
 
-    def do_show(self, arg):
-        """print string representation of instance of specified class"""
-        list_args_ofcmd = arg.split()
-        # print("do_show", list_args_ofcmd)
-        if HBNBCommand.validate_commandline(list_args_ofcmd):
-            key = "{}.{}".format(list_args_ofcmd[0], list_args_ofcmd[1])
-            # print(key)
-            if key in storage.all():
-                print(storage.all()[key])
-                return False
-            else:
-                print("** no instance found **")
-
-        # print(list_args_ofcmd)
-        return False
-
-    def do_destroy(self, arg):
-        """destroy instance of specified class"""
-
-        list_args_ofcmd = arg.split()
-        if HBNBCommand.validate_commandline(list_args_ofcmd):
-            key = "{}.{}".format(list_args_ofcmd[0], list_args_ofcmd[1])
-            # print(key)
-            instance = storage.all()
-            # print("do_destroy",instance)
-            for key in list(instance):
-                instance_id = key.split('.')[1]
-                if instance_id == list_args_ofcmd[1]:
-                    instance.pop(key, 0)
-                    storage.save()
-
-        return False
-
-    @staticmethod
-    def validate_commandline(args):
-        """validate command line arguments"""
-        # get command to call
-        command = inspect.stack()[1][3]
-        # print("validate_commandline", command, args)
-        return HBNBCommand.check_command(command, args)
-
-    @staticmethod
-    def check_command(command, args_list):
-        # print("ici", command, args_list)
-        return {
-            'do_create': HBNBCommand.validate_class,
-            'do_show': HBNBCommand.validate_instance,
-            'do_destroy': HBNBCommand.validate_instance,
-            'do_update': HBNBCommand.validate_update,
-        }.get(command)(args_list)
-
-    @staticmethod
-    def validate_class(args):
-        """validate class args"""
-        if len(args) < 1:
+    def do_update(self, line):
+        """Update if given exact object, exact attribute"""
+        args = parse(line)
+        if len(args) >= 4:
+            key = "{}.{}".format(args[0], args[1])
+            cast = type(eval(args[3]))
+            arg3 = args[3]
+            arg3 = arg3.strip('"')
+            arg3 = arg3.strip("'")
+            setattr(storage.all()[key], args[2], cast(arg3))
+            storage.all()[key].save()
+        elif len(args) == 0:
             print("** class name missing **")
-            return False
-        elif args[0] not in list(HBNBCommand.models):
+        elif args[0] not in HBNBCommand.classes:
             print("** class doesn't exist **")
-            return False
-        return True
+        elif len(args) == 1:
+            print("** instance id missing **")
+        elif ("{}.{}".format(args[0], args[1])) not in storage.all().keys():
+            print("** no instance found **")
+        elif len(args) == 2:
+            print("** attribute name missing **")
+        else:
+            print("** value missing **")
 
-    @staticmethod
-    def validate_instance(args):
-        """validate instance args"""
-        if len(args) == 0:
-            print("** class name missing **")
-            return False
-        if args[0] in list(HBNBCommand.models):
-            if len(args) > 1:
-                return True
-            else:
-                print("** instance id missing **")
-                return False
+    def do_count(self, line):
+        """Display count of instances specified"""
+        if line in HBNBCommand.classes:
+            count = 0
+            for key, objs in storage.all().items():
+                if line in key:
+                    count += 1
+            print(count)
         else:
             print("** class doesn't exist **")
-            return False
-        return HBNBCommand.validate_class(args)
 
-    @staticmethod
-    def validate_update(args):
-        """validate class args"""
+    def default(self, line):
+        """Accepts class name followed by arguement"""
+        args = line.split('.')
+        class_arg = args[0]
+        if len(args) == 1:
+            print("*** Unknown syntax: {}".format(line))
+            return
+        try:
+            args = args[1].split('(')
+            command = args[0]
+            if command == 'all':
+                HBNBCommand.do_all(self, class_arg)
+            elif command == 'count':
+                HBNBCommand.do_count(self, class_arg)
+            elif command == 'show':
+                args = args[1].split(')')
+                id_arg = args[0]
+                id_arg = id_arg.strip("'")
+                id_arg = id_arg.strip('"')
+                arg = class_arg + ' ' + id_arg
+                HBNBCommand.do_show(self, arg)
+            elif command == 'destroy':
+                args = args[1].split(')')
+                id_arg = args[0]
+                id_arg = id_arg.strip('"')
+                id_arg = id_arg.strip("'")
+                arg = class_arg + ' ' + id_arg
+                HBNBCommand.do_destroy(self, arg)
+            elif command == 'update':
+                args = args[1].split(',')
+                id_arg = args[0].strip("'")
+                id_arg = id_arg.strip('"')
+                name_arg = args[1].strip(',')
+                val_arg = args[2]
+                name_arg = name_arg.strip(' ')
+                name_arg = name_arg.strip("'")
+                name_arg = name_arg.strip('"')
+                val_arg = val_arg.strip(' ')
+                val_arg = val_arg.strip(')')
+                arg = class_arg + ' ' + id_arg + ' ' + name_arg + ' ' + val_arg
+                HBNBCommand.do_update(self, arg)
+            else:
+                print("*** Unknown syntax: {}".format(line))
+        except IndexError:
+            print("*** Unknown syntax: {}".format(line))
 
-        if HBNBCommand.validate_instance(args):
-            if len(args) < 3:
-                print("** attribute name missing **")
-                return (False)
-            elif len(args) < 4:
-                print("** value missing **")
-                return False
-            return True
-        return False
 
-    @staticmethod
-    def type_checker(arg):
-        """Check type of arg """
-        check_list = list(arg)
-        if check_list[0] == "'" or check_list[0] == '"':
-            new_string = ''.join([c for c in arg if c != '"' and c != "'"])
-            return (new_string)
-        if ord(check_list[0]) >= 48 and ord(check_list[0]) <= 57:
-            return (int(arg))
+def parse(line):
+    """Helper method to parse user typed input"""
+    return tuple(line.split())
 
 
 if __name__ == '__main__':
