@@ -21,7 +21,8 @@ classes = {"Amenity": Amenity, "BaseModel": BaseModel, "City": City,
 
 
 class HBNBCommand(cmd.Cmd):
-    """ HBNH console """
+
+    """HBNBCommand console class definition"""
     prompt = '(hbnb) '
 
     def do_EOF(self, arg):
@@ -29,7 +30,7 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def emptyline(self):
-        """ overwriting the emptyline method """
+        """Empty line overwrite"""
         return False
 
     def do_quit(self, arg):
@@ -51,7 +52,7 @@ class HBNBCommand(cmd.Cmd):
         instance.save()
 
     def do_show(self, arg):
-        """Prints an instance as a string based on the class and id"""
+        """Prints string representation of instance of specified class"""
         args = shlex.split(arg)
         if len(args) == 0:
             print("** class name missing **")
@@ -69,7 +70,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
 
     def do_destroy(self, arg):
-        """Deletes an instance based on the class and id"""
+        """destroy instance of specified class"""
         args = shlex.split(arg)
         if len(args) == 0:
             print("** class name missing **")
@@ -107,7 +108,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class doesn't exist **")
 
     def do_update(self, arg):
-        """Update an instance based on the class name, id, attribute & value"""
+        """Update an instance"""
         args = shlex.split(arg)
         integers = ["number_rooms", "number_bathrooms", "max_guest",
                     "price_by_night"]
@@ -116,8 +117,8 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
         elif args[0] in classes:
             if len(args) > 1:
-                k = args[0] + "." + args[1]
-                if k in models.storage.all():
+                key = args[0] + "." + args[1]
+                if key in models.storage.all():
                     if len(args) > 2:
                         if len(args) > 3:
                             if args[0] == "Place":
@@ -131,8 +132,9 @@ class HBNBCommand(cmd.Cmd):
                                         args[3] = float(args[3])
                                     except Exception:
                                         args[3] = 0.0
-                            setattr(models.storage.all()[k], args[2], args[3])
-                            models.storage.all()[k].save()
+                            setattr(models.storage.all()[key],
+                                    args[2], args[3])
+                            models.storage.all()[key].save()
                         else:
                             print("** value missing **")
                     else:
